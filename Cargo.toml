@@ -1,0 +1,15 @@
+[package]
+name = "github-hook-receiver"
+version = "0.1.0"
+authors = [ "Dennis Schubert <mail@∂ennis-schubert.de>" ]
+
+[dependencies]
+rustc-serialize = "*"
+iron = "*"
+router = "*"
+
+[dependencies.persistent]
+git = "https://github.com/iron/persistent.git"
+
+[dependencies.bodyparser]
+git = "https://github.com/iron/body-parser.git"

@@ -3,24 +3,37 @@ extern crate iron;
 extern crate persistent;
 extern crate router;
 
+#[macro_use] extern crate hyper;
+
 mod hook;
 
 use std::env;
 use std::thread;
 
+use hook::*;
 use iron::prelude::*;
 use iron::status;
 use persistent::Read;
 use router::{Router};
 
+header! {
+    (XHubSignature, "X-Hub-Signature") => [String]
+}
+
 const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
 
 fn parse_hook(req: &mut Request) -> IronResult<Response> {
     let json_body = req.get::<bodyparser::Json>();
+    let signature = req.headers.get::<XHubSignature>().unwrap().to_string();
+
     match json_body {
         Ok(Some(json_body)) => {
             thread::spawn(move || {
-                hook::receive(json_body);
+                let hook = GithubHook {
+                    signature: signature,
+                    payload: json_body
+                };
+                hook::receive(hook);
             });
             Ok(Response::with(status::Ok))
         },

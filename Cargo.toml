@@ -5,6 +5,7 @@ authors = [ "Dennis Schubert <mail@∂ennis-schubert.de>" ]
 
 [dependencies]
 rustc-serialize = "*"
+hyper = "*"
 iron = "*"
 router = "*"
 

@@ -21,6 +21,7 @@ pub fn receive(hook: GithubHook) {
 
     let json_payload = Json::from_str(&hook.payload).unwrap();
 
+    // TODO do only call this if we need to.
     match is_valid(test_shared_secret, hook.payload.into_bytes(), hook.signature) {
         false => { panic!("Incoming hook payload is not valid!"); },
         true => {}

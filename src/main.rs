@@ -24,7 +24,9 @@ const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
 
 fn parse_hook(req: &mut Request) -> IronResult<Response> {
     let body = req.get::<bodyparser::Raw>();
-    let signature = req.headers.get::<XHubSignature>().unwrap().to_string();
+    let signature = req.headers.get::<XHubSignature>()
+        .unwrap_or(&XHubSignature("".to_string()))
+        .to_string();
 
     match body {
         Ok(Some(body)) => {

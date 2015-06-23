@@ -1,5 +1,6 @@
 use std::fs::File;
 use std::io::Read;
+use std::process::Command;
 use std::str;
 
 use crypto::hmac::Hmac;
@@ -38,6 +39,19 @@ pub fn receive(hook: GithubHook, config_root: String) {
             };
         }
     };
+
+    let push_ref = json_payload.find("ref").unwrap().as_string().unwrap();
+    for aref in &repo_config.refs {
+        if aref == push_ref {
+            match Command::new(repo_config.command).status() {
+                Ok(_) => {},
+                Err(exception) => {
+                    println!("{}", exception);
+                }
+            };
+            break;
+        }
+    }
 }
 
 fn is_valid(secret: Vec<u8>, payload: Vec<u8>, signature: String) -> bool {

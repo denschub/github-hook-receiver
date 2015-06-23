@@ -14,9 +14,32 @@ The built binary will be stored as `target/release/github-hook-receiver`.
 
 ## Using
 
-By default, the server listens to `127.0.0.1:3000`. To change that, change the
-`LISTEN` environment variable, `LISTEN=0.0.0.0:8888` for example.
+By default, the server listens to `127.0.0.1:3000`. The configuration root
+directory and the server's listen address can be defined using command line
+arguments:
 
-## Configuration
+```
+./github-hook-receiver <config dir> [<listen address>]
+```
 
-ToDo.
+Please do not add a trailing slash to the config dir. You can omit the listen
+address if you are fine with `127.0.0.1:3000`.
+
+## Configuration files
+
+All configuration files have to be within the root directory mentioned above.
+The file name is the repositories full name with the slash replaced by two
+underscores. The config file for this repository would be
+`denschub__github-hook-receiver.json`. All available fields:
+
+```json
+{
+  "command": "/home/fancyapp/update.sh",
+  "refs": [
+    "refs/heads/master"
+  ],
+  "secret": "supersecretsecret"
+}
+```
+
+You can omit `secret` if you do not want to set one on GitHub. But you should.

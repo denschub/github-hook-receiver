@@ -4,10 +4,11 @@ version = "0.1.0"
 authors = [ "Dennis Schubert <mail@∂ennis-schubert.de>" ]
 
 [dependencies]
-rustc-serialize = "*"
 hyper = "*"
 iron = "*"
 router = "*"
+rust-crypto = "*"
+rustc-serialize = "*"
 
 [dependencies.persistent]
 git = "https://github.com/iron/persistent.git"

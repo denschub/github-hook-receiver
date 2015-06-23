@@ -23,15 +23,15 @@ header! {
 const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
 
 fn parse_hook(req: &mut Request) -> IronResult<Response> {
-    let json_body = req.get::<bodyparser::Json>();
+    let body = req.get::<bodyparser::Raw>();
     let signature = req.headers.get::<XHubSignature>().unwrap().to_string();
 
-    match json_body {
-        Ok(Some(json_body)) => {
+    match body {
+        Ok(Some(body)) => {
             thread::spawn(move || {
                 let hook = GithubHook {
+                    payload: body,
                     signature: signature,
-                    payload: json_body
                 };
                 hook::receive(hook);
             });

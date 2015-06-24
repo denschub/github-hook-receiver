@@ -4,8 +4,10 @@ version = "0.1.0"
 authors = [ "Dennis Schubert <mail@∂ennis-schubert.de>" ]
 
 [dependencies]
+env_logger = "*"
 hyper = "*"
 iron = "*"
+log = "*"
 router = "*"
 rust-crypto = "*"
 rustc-serialize = "*"

@@ -27,15 +27,24 @@ pub fn receive(hook: GithubHook, config_root: String) {
     let json_payload = Json::from_str(&hook.payload).unwrap();
     let repo_name = json_payload.find_path(&["repository", "full_name"]).unwrap().as_string().unwrap();
 
+    info!("Received payload for {}", repo_name);
+
     let repo_config_filename = config_root + "/" + &str::replace(&repo_name, "/", "__") + ".json";
     let repo_config = load_repo_config(repo_config_filename);
 
     match repo_config.secret {
-        None => {},
+        None => {
+            info!("No secret in config file, skipping validation.");
+        },
         Some(secret) => {
             match is_valid(secret.into_bytes(), hook.payload.into_bytes(), hook.signature) {
-                false => { panic!("Incoming hook payload is not valid!"); },
-                true => {}
+                false => {
+                    error!("Payload validation failed, aborting!");
+                    panic!();
+                },
+                true => {
+                    info!("Payload validation succeeded.");
+                }
             };
         }
     };
@@ -44,9 +53,11 @@ pub fn receive(hook: GithubHook, config_root: String) {
     for aref in &repo_config.refs {
         if aref == push_ref {
             match Command::new(repo_config.command).status() {
-                Ok(_) => {},
+                Ok(_) => {
+                    info!("Command ran successfully.");
+                },
                 Err(exception) => {
-                    println!("{}", exception);
+                    error!("Command failed: {}", exception);
                 }
             };
             break;
@@ -66,14 +77,25 @@ fn is_valid(secret: Vec<u8>, payload: Vec<u8>, signature: String) -> bool {
 
 fn load_repo_config(repo_config_filename: String) -> RepoConfig {
     let mut file = match File::open(&repo_config_filename) {
-        Ok(file) => file,
-        Err(err) => { panic!("Could not load config file at '{}': {}", repo_config_filename, err); }
+        Ok(file) => {
+            info!("Config file loaded.");
+            file
+        },
+        Err(err) => {
+            error!("Could not load config file at '{}': {}", repo_config_filename, err);
+            panic!();
+        }
     };
 
     let mut file_contents = String::new();
     match file.read_to_string(&mut file_contents) {
-        Ok(_) => {},
-        Err(err) => { panic!("Could not read config file at '{}: {}'", repo_config_filename, err); }
+        Ok(_) => {
+            info!("Config file read.");
+        },
+        Err(err) => {
+            error!("Could not read config file at '{}: {}'", repo_config_filename, err);
+            panic!()
+        }
     };
 
     json::decode(&file_contents).unwrap()

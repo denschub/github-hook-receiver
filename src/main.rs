@@ -1,11 +1,13 @@
 extern crate bodyparser;
 extern crate crypto;
+extern crate env_logger;
 extern crate iron;
 extern crate persistent;
 extern crate router;
 extern crate rustc_serialize;
 
 #[macro_use] extern crate hyper;
+#[macro_use] extern crate log;
 
 mod hook;
 
@@ -46,6 +48,8 @@ fn parse_hook(config_dir_str: &str, req: &mut Request) -> IronResult<Response> {
 }
 
 fn main() {
+    env_logger::init().unwrap();
+
     let args: Vec<_> = env::args().collect();
     if args.len() < 2 || args.len() > 3 {
         println!("Usage: github-hook-receiver <config dir (no trailing slash.)> [<listen address (127.0.0.1:3000)>]");
@@ -63,6 +67,6 @@ fn main() {
     let mut chain = Chain::new(router);
     chain.link_before(Read::<bodyparser::MaxBodyLength>::one(MAX_BODY_LENGTH));
 
-    println!("Will listen on {}...", listen);
+    info!("Will listen on {}...", listen);
     Iron::new(chain).http(&listen[..]).unwrap();
 }

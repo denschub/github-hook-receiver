@@ -14,25 +14,27 @@ use rustc_serialize::json::*;
 pub struct GithubHook {
     pub event: String,
     pub payload: String,
-    pub signature: String
+    pub signature: String,
+    pub config_root: String
 }
 
 impl GithubHook {
-    pub fn new(event: &str, payload: &str, signature: &str) -> GithubHook {
+    pub fn new(event: &str, payload: &str, signature: &str, config_root: &str) -> GithubHook {
         GithubHook {
             event: event.to_string(),
             payload: payload.to_string(),
-            signature: signature.to_string()
+            signature: signature.to_string(),
+            config_root: config_root.to_string()
         }
     }
 
-    pub fn receive(&self, config_root: String) {
+    pub fn receive(&self) {
         let json_payload = Json::from_str(&self.payload).unwrap();
         let repo_name = json_payload.find_path(&["repository", "full_name"]).unwrap().as_string().unwrap();
 
         info!("Received payload for {}", repo_name);
 
-        let repo_config_filename = config_root + "/" + &str::replace(&repo_name, "/", "__") + ".json";
+        let repo_config_filename = self.config_root.clone() + "/" + &str::replace(&repo_name, "/", "__") + ".json";
         let repo_config = RepoConfig::new(repo_config_filename);
 
         match repo_config.secret {

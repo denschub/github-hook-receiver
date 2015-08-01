@@ -37,20 +37,13 @@ impl GithubHook {
         let repo_config_filename = self.config_root.clone() + "/" + &str::replace(&repo_name, "/", "__") + ".json";
         let repo_config = RepoConfig::new(repo_config_filename);
 
-        match repo_config.secret {
-            None => {
-                info!("No secret in config file, skipping validation.");
+        match self.is_valid(repo_config.secret) {
+            false => {
+                error!("Payload validation failed, aborting!");
+                panic!();
             },
-            Some(secret) => {
-                match self.is_valid(secret.into_bytes()) {
-                    false => {
-                        error!("Payload validation failed, aborting!");
-                        panic!();
-                    },
-                    true => {
-                        info!("Payload validation succeeded.");
-                    }
-                };
+            true => {
+                info!("Payload validation succeeded.");
             }
         };
 
@@ -70,13 +63,18 @@ impl GithubHook {
         }
     }
 
-    fn is_valid(&self, secret: Vec<u8>) -> bool {
-        let raw_signature = str::replace(&self.signature, "sha1=", "");
-        let mut hmac = Hmac::new(Sha1::new(), &secret);
+    fn is_valid(&self, secret: Option<String>) -> bool {
+        match secret {
+            None => {
+                info!("No secret in config file, skipping validation.");
+                true
+            },
+            Some(secret) => {
+                let mut hmac = Hmac::new(Sha1::new(), &secret.as_bytes());
+                hmac.input(&self.payload.as_bytes()[..]);
 
-        hmac.input(&self.payload.as_bytes()[..]);
-        let result = hmac.result().code().to_hex();
-
-        raw_signature == result
+                str::replace(&self.signature, "sha1=", "") == hmac.result().code().to_hex()
+            }
+        }
     }
 }

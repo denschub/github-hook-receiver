@@ -42,21 +42,15 @@ impl GithubHook {
                 error!("Payload validation failed, aborting!");
                 panic!();
             },
-            true => {
-                info!("Payload validation succeeded.");
-            }
+            true => info!("Payload validation succeeded.")
         };
 
         let push_ref = json_payload.find("ref").unwrap().as_string().unwrap();
         for aref in &repo_config.refs {
             if aref == push_ref {
                 match Command::new(repo_config.command).status() {
-                    Ok(_) => {
-                        info!("Command ran successfully.");
-                    },
-                    Err(exception) => {
-                        error!("Command failed: {}", exception);
-                    }
+                    Ok(_) => info!("Command ran successfully."),
+                    Err(exception) => error!("Command failed: {}", exception)
                 };
                 break;
             }

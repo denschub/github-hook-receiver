@@ -38,9 +38,7 @@ fn parse_hook(config_dir_str: &str, req: &mut Request) -> IronResult<Response> {
     match body {
         Ok(Some(body)) => {
             let hook = GithubHook::new(&event, &body, &signature, &config_dir);
-            thread::spawn(move || {
-                hook.receive();
-            });
+            thread::spawn(move || { hook.receive(); });
             Ok(Response::with(status::Ok))
         },
         _ => Ok(Response::with(status::NotFound))

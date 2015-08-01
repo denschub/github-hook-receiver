@@ -26,9 +26,7 @@ impl RepoConfig {
 
         let mut file_contents = String::new();
         match file.read_to_string(&mut file_contents) {
-            Ok(_) => {
-                info!("Config file read.");
-            },
+            Ok(_) => info!("Config file read."),
             Err(err) => {
                 error!("Could not read config file at '{}: {}'", repo_config_filename, err);
                 panic!()

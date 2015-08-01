@@ -10,11 +10,13 @@ extern crate rustc_serialize;
 #[macro_use] extern crate log;
 
 mod hook;
+mod repo_config;
 
 use std::env;
 use std::thread;
 
 use hook::*;
+
 use iron::prelude::*;
 use iron::status;
 use persistent::Read;

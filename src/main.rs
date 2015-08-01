@@ -20,26 +20,24 @@ use iron::status;
 use persistent::Read;
 use router::{Router};
 
-header! {
-    (XHubSignature, "X-Hub-Signature") => [String]
-}
+header! {(XHubSignature, "X-Hub-Signature") => [String]}
+header! {(XGitHubEvent, "X-GitHub-Event") => [String]}
 
 const MAX_BODY_LENGTH: usize = 1024 * 1024 * 10;
 
 fn parse_hook(config_dir_str: &str, req: &mut Request) -> IronResult<Response> {
     let config_dir = config_dir_str.to_string();
     let body = req.get::<bodyparser::Raw>();
-    let signature = req.headers.get::<XHubSignature>()
-        .unwrap_or(&XHubSignature("".to_string()))
-        .to_string();
+    let event = req.headers.get::<XGitHubEvent>().unwrap();
+
+    let empty_sig = &XHubSignature("".to_string());
+    let signature = req.headers.get::<XHubSignature>().unwrap_or(empty_sig);
 
     match body {
         Ok(Some(body)) => {
+            let hook = GithubHook::new(&event, &body, &signature);
             thread::spawn(move || {
-                hook::receive(
-                    GithubHook { payload: body, signature: signature },
-                    config_dir
-                );
+                hook::receive(hook, config_dir);
             });
             Ok(Response::with(status::Ok))
         },

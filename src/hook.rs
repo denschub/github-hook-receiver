@@ -12,8 +12,19 @@ use rustc_serialize::json;
 
 #[derive(Debug)]
 pub struct GithubHook {
+    pub event: String,
     pub payload: String,
     pub signature: String
+}
+
+impl GithubHook {
+    pub fn new(event: &str, payload: &str, signature: &str) -> GithubHook {
+        GithubHook {
+            event: event.to_string(),
+            payload: payload.to_string(),
+            signature: signature.to_string()
+        }
+    }
 }
 
 #[derive(Debug, RustcDecodable)]

@@ -37,7 +37,7 @@ impl GithubHook {
         let repo_config_filename = self.config_root.clone() + "/" + &str::replace(&repo_name, "/", "__") + ".json";
         let repo_config = RepoConfig::new(repo_config_filename);
 
-        match self.is_valid(repo_config.secret) {
+        match self.is_valid(repo_config.secret.as_ref()) {
             false => {
                 error!("Payload validation failed, aborting!");
                 panic!();
@@ -49,39 +49,14 @@ impl GithubHook {
         if repo_config.handlers.contains_key(event) {
             let handler = repo_config.handlers.get(event).unwrap();
             match event {
-                "push" => {
-                    let push_ref = unwrap_json_string(json_payload.find("ref"));
-                    for aref in &repo_config.refs {
-                        if aref == &push_ref {
-                            let mut command = Command::new(handler);
-
-                            let head = unwrap_json_string(json_payload.find_path(&["head_commit", "id"]));
-                            command.env("HEAD", head);
-
-                            self.execute_handler(&mut command);
-                            break;
-                        }
-                    }
-                },
-                "pull_request" => {
-                    let mut command = Command::new(handler);
-
-                    command.env("ACTION", unwrap_json_string(json_payload.find("action")));
-
-                    let pr_number = unwrap_json_number(json_payload.find_path(&["pull_request", "number"]));
-                    command.env("PR", pr_number.to_string());
-
-                    self.execute_handler(&mut command);
-                },
-                _ => {
-                    let mut command = Command::new(handler);
-                    self.execute_handler(&mut command);
-                }
+                "push" => self.process_push(json_payload, &repo_config, handler),
+                "pull_request" => self.process_pull_request(json_payload, handler),
+                _ => self.process_default(handler)
             };
         }
     }
 
-    fn is_valid(&self, secret: Option<String>) -> bool {
+    fn is_valid(&self, secret: Option<&String>) -> bool {
         match secret {
             None => {
                 info!("No secret in config file, skipping validation.");
@@ -94,6 +69,38 @@ impl GithubHook {
                 str::replace(&self.signature, "sha1=", "") == hmac.result().code().to_hex()
             }
         }
+    }
+
+    fn process_push(&self, json_payload: Json, repo_config: &RepoConfig, handler: &String) {
+        let push_ref = unwrap_json_string(json_payload.find("ref"));
+        let refs = &repo_config.refs;
+        for aref in refs {
+            if aref == &push_ref {
+                let mut command = Command::new(handler);
+
+                let head = unwrap_json_string(json_payload.find_path(&["head_commit", "id"]));
+                command.env("HEAD", head);
+
+                self.execute_handler(&mut command);
+                break;
+            }
+        }
+    }
+
+    fn process_pull_request(&self, json_payload: Json, handler: &String) {
+        let mut command = Command::new(handler);
+
+        command.env("ACTION", unwrap_json_string(json_payload.find("action")));
+
+        let pr_number = unwrap_json_number(json_payload.find_path(&["pull_request", "number"]));
+        command.env("PR", pr_number.to_string());
+
+        self.execute_handler(&mut command);
+    }
+
+    fn process_default(&self, handler: &String) {
+        let mut command = Command::new(handler);
+        self.execute_handler(&mut command);
     }
 
     fn execute_handler(&self, handler: &mut Command) {

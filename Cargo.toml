@@ -1,6 +1,6 @@
 [package]
 name = "github-hook-receiver"
-version = "0.2.0"
+version = "0.2.1"
 authors = [ "Dennis Schubert <mail@dennis-schubert.de>" ]
 
 [dependencies]

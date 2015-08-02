@@ -3,8 +3,7 @@
 
 The `github-hook-receiver` is a simple GitHub Webhook receiver based written in
 Rust. It basically listens for all incoming hooks, checks if there is a
-configuration file for the incoming repository and execute a command on `push`
-notifications.
+configuration file for the incoming repository and executes a command.
 
 ## Building
 
@@ -67,4 +66,5 @@ by the handler script.
 ### Pull Request
 
 * `ACTION`: The events action, see [GitHubs documentation](https://developer.github.com/v3/activity/events/types/#pullrequestevent).
+* `BASE`: The PRs base head.
 * `PR`: The number of the pull request.

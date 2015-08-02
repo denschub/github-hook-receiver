@@ -47,6 +47,14 @@ underscores. The config file for this repository would be
 
 You can omit `secret` if you do not want to set one on GitHub. But you should.
 
+## Available events
+
+You can handle [all available Webhook
+events](https://developer.github.com/webhooks/#events) provided by GitHub. Just
+specify a handler using the events name as shown in the example above.
+Additional data may be available inside environmental variables, see below for
+more information.
+
 ## Environment variables inside handlers
 
 Some environment variables get set by the receiver to allow further processing

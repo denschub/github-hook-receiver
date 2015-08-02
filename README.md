@@ -46,3 +46,17 @@ underscores. The config file for this repository would be
 ```
 
 You can omit `secret` if you do not want to set one on GitHub. But you should.
+
+## Environment variables inside handlers
+
+Some environment variables get set by the receiver to allow further processing
+by the handler script.
+
+## Push
+
+* `HEAD`: The new HEAD sha1 hash.
+
+### Pull Request
+
+* `ACTION`: The events action, see [GitHubs documentation](https://developer.github.com/v3/activity/events/types/#pullrequestevent).
+* `PR`: The number of the pull request.

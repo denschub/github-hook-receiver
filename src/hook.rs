@@ -30,7 +30,7 @@ impl GithubHook {
 
     pub fn receive(&self) {
         let json_payload = Json::from_str(&self.payload).unwrap();
-        let repo_name = json_payload.find_path(&["repository", "full_name"]).unwrap().as_string().unwrap();
+        let repo_name = unwrap_json_string(json_payload.find_path(&["repository", "full_name"]));
 
         info!("Received {} for {}", self.event, repo_name);
 
@@ -50,21 +50,34 @@ impl GithubHook {
             let handler = repo_config.handlers.get(event).unwrap();
             match event {
                 "push" => {
-                    let push_ref = json_payload.find("ref").unwrap().as_string().unwrap();
+                    let push_ref = unwrap_json_string(json_payload.find("ref"));
                     for aref in &repo_config.refs {
-                        if aref == push_ref {
+                        if aref == &push_ref {
                             let mut command = Command::new(handler);
+
+                            let head = unwrap_json_string(json_payload.find_path(&["head_commit", "id"]));
+                            command.env("HEAD", head);
+
                             self.execute_handler(&mut command);
                             break;
                         }
                     }
+                },
+                "pull_request" => {
+                    let mut command = Command::new(handler);
+
+                    command.env("ACTION", unwrap_json_string(json_payload.find("action")));
+
+                    let pr_number = unwrap_json_number(json_payload.find_path(&["pull_request", "number"]));
+                    command.env("PR", pr_number.to_string());
+
+                    self.execute_handler(&mut command);
                 },
                 _ => {
                     let mut command = Command::new(handler);
                     self.execute_handler(&mut command);
                 }
             };
-
         }
     }
 
@@ -89,4 +102,12 @@ impl GithubHook {
             Err(exception) => error!("Command failed: {}", exception)
         }
     }
+}
+
+fn unwrap_json_string(json: Option<&Json>) -> String {
+    json.unwrap().as_string().unwrap().to_string()
+}
+
+fn unwrap_json_number(json: Option<&Json>) -> i64 {
+    json.unwrap().as_i64().unwrap()
 }

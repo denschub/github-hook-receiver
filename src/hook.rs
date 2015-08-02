@@ -32,7 +32,7 @@ impl GithubHook {
         let json_payload = Json::from_str(&self.payload).unwrap();
         let repo_name = json_payload.find_path(&["repository", "full_name"]).unwrap().as_string().unwrap();
 
-        info!("Received payload for {}", repo_name);
+        info!("Received {} for {}", self.event, repo_name);
 
         let repo_config_filename = self.config_root.clone() + "/" + &str::replace(&repo_name, "/", "__") + ".json";
         let repo_config = RepoConfig::new(repo_config_filename);
@@ -45,15 +45,26 @@ impl GithubHook {
             true => info!("Payload validation succeeded.")
         };
 
-        let push_ref = json_payload.find("ref").unwrap().as_string().unwrap();
-        for aref in &repo_config.refs {
-            if aref == push_ref {
-                match Command::new(repo_config.command).status() {
-                    Ok(_) => info!("Command ran successfully."),
-                    Err(exception) => error!("Command failed: {}", exception)
-                };
-                break;
-            }
+        let event = self.event.as_ref();
+        if repo_config.handlers.contains_key(event) {
+            let handler = repo_config.handlers.get(event).unwrap();
+            match event {
+                "push" => {
+                    let push_ref = json_payload.find("ref").unwrap().as_string().unwrap();
+                    for aref in &repo_config.refs {
+                        if aref == push_ref {
+                            let mut command = Command::new(handler);
+                            self.execute_handler(&mut command);
+                            break;
+                        }
+                    }
+                },
+                _ => {
+                    let mut command = Command::new(handler);
+                    self.execute_handler(&mut command);
+                }
+            };
+
         }
     }
 
@@ -69,6 +80,13 @@ impl GithubHook {
 
                 str::replace(&self.signature, "sha1=", "") == hmac.result().code().to_hex()
             }
+        }
+    }
+
+    fn execute_handler(&self, handler: &mut Command) {
+        match handler.status() {
+            Ok(_) => info!("Command ran successfully."),
+            Err(exception) => error!("Command failed: {}", exception)
         }
     }
 }

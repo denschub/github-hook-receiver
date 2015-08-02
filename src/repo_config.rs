@@ -1,12 +1,13 @@
 use std::fs::File;
 use std::io::Read;
+use std::collections::HashMap;
 
 use rustc_serialize::json::*;
 use rustc_serialize::json;
 
 #[derive(Debug, RustcDecodable)]
 pub struct RepoConfig {
-    pub command: String,
+    pub handlers: HashMap<String, String>,
     pub refs: Vec<String>,
     pub secret: Option<String>
 }

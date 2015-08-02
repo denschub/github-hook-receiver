@@ -34,7 +34,10 @@ underscores. The config file for this repository would be
 
 ```json
 {
-  "command": "/home/fancyapp/update.sh",
+  "handlers": {
+    "pull_request": "/home/fancyapp/pr_quality_control.sh",
+    "push": "/home/fancyapp/deploy.sh"
+  },
   "refs": [
     "refs/heads/master"
   ],

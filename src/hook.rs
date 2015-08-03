@@ -95,7 +95,7 @@ impl GithubHook {
         let pr_number = unwrap_json_number(json_payload.find_path(&["pull_request", "number"]));
         command.env("PR", pr_number.to_string());
 
-        let base = unwrap_json_number(json_payload.find_path(&["pull_request", "base", "ref"]));
+        let base = unwrap_json_string(json_payload.find_path(&["pull_request", "base", "ref"]));
         command.env("BASE", base.to_string());
 
         self.execute_handler(&mut command);

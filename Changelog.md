@@ -1,3 +1,5 @@
+# 0.4.0
+
 # 0.3.0
 
 (this is the first version that gets a Changelog. Some people seem to use

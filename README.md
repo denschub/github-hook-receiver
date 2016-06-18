@@ -1,5 +1,7 @@
 # github-hook-receiver
-[![Build Status](https://api.travis-ci.org/denschub/github-hook-receiver.svg)](http://travis-ci.org/denschub/github-hook-receiver)
+
+master: [![Build Status](https://api.travis-ci.org/denschub/github-hook-receiver.svg?branch=master)](http://travis-ci.org/denschub/github-hook-receiver) |
+develop: [![Build Status](https://api.travis-ci.org/denschub/github-hook-receiver.svg?branch=develop)](http://travis-ci.org/denschub/github-hook-receiver)
 
 The `github-hook-receiver` is a simple GitHub Webhook receiver based written in
 Rust. It basically listens for all incoming hooks, checks if there is a
@@ -23,6 +25,9 @@ arguments:
 
 Please do not add a trailing slash to the config dir. You can omit the listen
 address if you are fine with `127.0.0.1:3000`.
+
+The receiver will only act on events to `http[s]://[host]/receive`, so set your
+GitHub hook configuration accordingly.
 
 ## Configuration files
 

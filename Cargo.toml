@@ -1,16 +1,16 @@
 [package]
 name = "github-hook-receiver"
-version = "0.2.2"
+version = "0.3.0"
 authors = [ "Dennis Schubert <mail@dennis-schubert.de>" ]
 
 [dependencies]
-env_logger = "*"
-hyper = "*"
-iron = "*"
-log = "*"
-router = "*"
-rust-crypto = "*"
-rustc-serialize = "*"
+env_logger = "0.3.3"
+hyper = "0.8.1"
+iron = "0.3.0"
+log = "0.3.6"
+router = "0.1.1"
+rust-crypto = "0.2.36"
+rustc-serialize = "0.3.19"
 
 [dependencies.persistent]
 git = "https://github.com/iron/persistent.git"
